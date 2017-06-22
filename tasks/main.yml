@@ -1,8 +1,32 @@
 ---
 - name: Check if installed
-  stat: path=/apps/headphones
+  stat: path={{ hp_install_dir }}
   register: check_installed
 
-- name: CentOS Install
-  include: "centos.yml"
-  when: ansible_distribution == 'CentOS' and check_installed.stat.exists == False
+- name: Install
+  include: "install.yml"
+  when: not check_installed.stat.exists
+
+- name: Configure Backups
+  include: "backups.yml"
+  when: hp_backups_enabled
+
+- block: 
+
+    - name: Update
+      git:
+        repo: "{{ hp_repo }}"
+        dest: "{{ hp_install_dir }}"
+      become: true
+      ignore_errors: true
+
+    - name: Take ownership of Repo
+      file:
+        dest: "{{ hp_install_dir }}"
+        owner: "{{ hp_user }}"
+        group: "{{ hp_group }}"
+        recurse: yes
+      become: true
+
+  when: hp_allow_update
+ 

@@ -1,0 +1,45 @@
+---
+
+- name: Stat backup target
+  stat: path={{ hp_backup_target }}
+  register: backup_dir
+
+- name: Create backup dir
+  file:
+    path: "{{ hp_backup_target }}"
+    state: directory
+    owner: "{{ hp_user }}"
+    group: "{{ hp_group }}"
+  when: not backup_dir.stat.exists
+
+- name: Stat backup script dir
+  stat: path={{ hp_backup_script_dir }}
+  register: backup_script_dir
+
+- name: Create backup script dir
+  file:
+    path: "{{ hp_backup_script_dir }}"
+    state: directory
+    owner: "{{ hp_user }}"
+    group: "{{ hp_group }}"
+  when: not backup_script_dir.stat.exists
+  become: true
+
+- name: Create backup script
+  template:
+    src: headphones_backup.sh.j2
+    dest: "{{ hp_backup_script_dir }}/headphones_backup.sh"
+    owner: "{{ hp_user }}"
+    group: "{{ hp_group }}"
+    mode: "a+x"
+  become: true
+
+- name: Create cron backup
+  cron:
+    name: "headphones Backup"
+    hour: "04"
+    minute: "40"
+    user: "root"
+    job: "{{ hp_backup_script_dir }}/headphones_backup.sh"
+    state: present
+  become: true

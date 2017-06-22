@@ -1,0 +1,16 @@
+#
+# Systemd unit file for Headphones
+#
+
+[Unit]
+Description=Headphones Daemon
+
+[Service]
+Type=forking
+User={{ hp_user }}
+Group={{ hp_group }}
+ExecStart=/usr/bin/python {{ hp_install_dir }}/Headphones.py --daemon --datadir={{ hp_config_dir }} --config={{ hp_config_dir }}/headphones_config.ini --quiet --nolaunch
+GuessMainPID=no
+
+[Install]
+WantedBy=multi-user.target

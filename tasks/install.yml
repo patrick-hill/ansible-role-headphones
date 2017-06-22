@@ -1,0 +1,92 @@
+---
+
+- name: Create Group
+  group:
+    name: "{{ hp_group }}"
+    system: no
+    state: present 
+  become: true
+
+- name: Create User
+  user:
+    name: "{{ hp_user }}"
+    group: "{{ hp_group }}"
+    state: present
+    system: no
+    createhome: no
+    shell: /bin/false
+  become: true
+
+- name: Create dirs
+  file:
+    dest: "{{ item }}"
+    state: directory
+    recurse: yes
+    owner: "{{ hp_user }}"
+    group: "{{ hp_group }}"
+  with_items:
+    - "{{ hp_install_dir }}"
+    - "{{ hp_config_dir }}"
+  become: true
+
+- name: Clone repo
+  git:
+    repo: "{{ hp_repo }}"
+    dest: "{{ hp_install_dir }}"
+  become: true
+
+- name: Take ownership of Repo
+  file:
+    dest: "{{ hp_install_dir }}"
+    owner: "{{ hp_user }}"
+    group: "{{ hp_group }}"
+    recurse: yes
+  become: true
+
+- name: Add service
+  template:
+    src: headphones.service.j2
+    dest: /etc/systemd/system/headphones.service
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+
+# Service tom-foolary to get the ini file to generate 
+- name: Enable service
+  service:
+    name: headphones.service
+    enabled: yes
+    state: started
+  become: true
+
+- name: Restart service
+  service:
+    name: headphones.service
+    state: restarted
+  become: true
+
+- name: Stop service
+  service:
+    name: headphones.service
+    state: stopped
+  become: true
+
+- name: Wait_for ini file to be created
+  wait_for:
+    path: "{{ hp_config_dir}}/headphones_config.ini"
+    state: present
+
+- name: Configure init
+  lineinfile:
+    dest:   "{{ hp_config_dir }}/headphones_config.ini"
+    regexp: "^http_host"
+    line:   "http_host = 0.0.0.0"
+  become: true
+
+- name: Restart service
+  service:
+    name: headphones.service
+    state: restarted
+  become: true
+  

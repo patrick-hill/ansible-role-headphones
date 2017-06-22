@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Script is used to backup sensitive files to a compressed file
+
+archive_command="{{ hp_backup_command }}"
+archive_command_args={{ hp_backup_command_args }}
+backup_filename={{ hp_backup_filename }}
+backup_dir={{ hp_config_dir }}
+backup_source={{ hp_backup_sources }}
+backup_target={{ hp_backup_target }}
+backup_excludes="{{ hp_backup_excludes }}"
+
+cd $backup_dir
+cmd="$archive_command $backup_excludes $archive_command_args $backup_target/$backup_filename $backup_source"
+echo ''
+echo "Command is: $cmd"
+eval $cmd
+
+echo 'Done'
+exit 0

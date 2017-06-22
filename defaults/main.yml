@@ -1,2 +1,27 @@
 ---
 # defaults file for ansible-role-headphones
+
+hp_user: 'headphones'
+hp_group: 'headphones'
+
+hp_install_dir:  /opt/heaphones
+hp_config_dir:   /opt/data/.heaphones
+hp_script_dir:   /opt/scripts
+
+hp_restore_from_backups: false
+hp_restore_file: ''
+
+hp_repo: https://github.com/rembo10/headphones.git
+hp_allow_update: true
+
+hp_firewall_enabled: false
+
+# Backup Script
+hp_backups_enabled:    false
+hp_backup_script_dir:  "{{ hp_script_dir }}"
+hp_backup_command:     'GZIP=-9 tar'
+hp_backup_command_args: '-cpzf'
+hp_backup_filename:    heaphones-`date \+%Y-\%m-\%d__\%H-\%M-\%S`.tar.gz
+hp_backup_sources:     "*"
+hp_backup_target:      "/_backups/heaphones"
+hp_backup_excludes:    "--exclude=cache --exclude=logs"
